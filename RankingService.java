@@ -1,0 +1,39 @@
+package festival;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+public final class RankingService {
+    private final RankingStrategy strategy;
+
+    public RankingService(RankingStrategy strategy) {
+        if (strategy == null) {
+            throw new IllegalArgumentException("Стратегия не должна быть null");
+        }
+        this.strategy = strategy;
+    }
+
+    public List<RankedMovie> rank(List<Movie> movies) {
+        List<RankedMovie> result = new ArrayList<>();
+
+        for (Movie movie : movies) {
+            if (movie.hasRatings()) {
+                double score = strategy.score(movie);
+                result.add(new RankedMovie(movie, score));
+            }
+        }
+
+        result.sort(
+            Comparator.comparingDouble(RankedMovie::score)
+                .reversed()
+                .thenComparingInt(row -> row.movie().getId())
+        );
+
+        return result;
+    }
+
+    public String ruleName() {
+        return strategy.name();
+    }
+}
